@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Just Chill — Interactive Demo v2.5.2</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--text:#172033;--muted:#667085;--primary:#5b4bdb;--primary2:#7c5cff;--line:#e7eaf0;--good:#159957;--warn:#b7791f;--bad:#d64545}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--text)}
+button,input,select,textarea{font:inherit}button{cursor:pointer;border:0}.app{min-height:100vh}
+.top{background:linear-gradient(135deg,#4d3bd0,#7c5cff);color:#fff;padding:18px 16px;position:sticky;top:0;z-index:10;box-shadow:0 4px 18px #0002}
+.brand{display:flex;align-items:center;justify-content:space-between;gap:10px}.brand h1{margin:0;font-size:25px}.brand small{opacity:.85}.rolebar{display:flex;gap:8px;margin-top:14px;overflow:auto}.rolebar button{white-space:nowrap;background:#ffffff20;color:#fff;padding:9px 14px;border-radius:999px}.rolebar button.active{background:#fff;color:#4d3bd0}
+.wrap{max-width:1100px;margin:auto;padding:16px}.screen{display:none}.screen.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 5px 20px #10182808}.card h3,.card h2{margin-top:0}.stat{font-size:28px;font-weight:800}.muted{color:var(--muted);font-size:13px}
+.btn{padding:10px 14px;border-radius:10px;background:#eef0ff;color:#4d3bd0;font-weight:700}.btn.primary{background:var(--primary);color:#fff}.btn.good{background:#e7f7ef;color:#087443}.btn.bad{background:#fdecec;color:#b42318}.btn.dark{background:#172033;color:#fff}.btn.full{width:100%}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}.actions{display:flex;gap:8px;flex-wrap:wrap}
+input,select,textarea{width:100%;padding:11px 12px;border:1px solid #d9dee8;border-radius:10px;background:#fff;outline:none}input:focus,select:focus,textarea:focus{border-color:var(--primary)}
+label{display:block;font-size:13px;font-weight:700;margin:10px 0 6px}.formgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.nav{display:flex;gap:7px;overflow:auto;margin:14px 0}.nav button{padding:9px 12px;border-radius:9px;background:#fff;border:1px solid var(--line);white-space:nowrap}.nav button.active{background:#172033;color:#fff}
+.badge{display:inline-block;padding:5px 9px;border-radius:999px;font-size:12px;font-weight:700}.pending{background:#fff5d6;color:#9a6700}.approved{background:#e7f7ef;color:#087443}.rejected{background:#fdecec;color:#b42318}.completed{background:#e9e7ff;color:#4d3bd0}.cancelled{background:#edf0f5;color:#475467}
+.booking{border:1px solid var(--line);border-radius:14px;padding:13px;margin-top:10px}.booking .title{font-weight:800}.hiddeninfo{filter:blur(5px);user-select:none;background:#f1f3f7;border-radius:6px;padding:2px 6px}
+.hero{padding:22px;border-radius:18px;background:linear-gradient(135deg,#ede9ff,#fff);border:1px solid #ded8ff;margin-bottom:15px}.hero h2{margin:0 0 7px}.price{font-size:28px;font-weight:900}.plan{border:2px solid var(--line);border-radius:16px;padding:16px}.plan.selected{border-color:var(--primary);background:#f8f7ff}
+.modal{position:fixed;inset:0;background:#10182899;display:none;align-items:center;justify-content:center;padding:15px;z-index:50}.modal.open{display:flex}.modalbox{background:#fff;border-radius:18px;max-width:520px;width:100%;max-height:90vh;overflow:auto;padding:20px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#172033;color:#fff;padding:11px 16px;border-radius:999px;display:none;z-index:100}.toast.show{display:block}
+.categoryCard{cursor:pointer;transition:.18s;border:1px solid var(--line);border-radius:16px;padding:16px;background:#fff}.categoryCard:hover{transform:translateY(-2px);box-shadow:0 8px 24px #10182814;border-color:#cfc7ff}.serviceRow{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--line);border-radius:12px;padding:11px;margin-top:9px}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px;border-bottom:1px solid var(--line);font-size:13px}
+@media(max-width:750px){.grid,.grid2,.formgrid{grid-template-columns:1fr}.wrap{padding:12px}.top{padding:15px 12px}.card{padding:14px}.brand h1{font-size:22px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top">
+  <div class="brand"><div><h1>Just Chill</h1><small>Booking & Service Management Demo</small></div><button class="btn" onclick="resetDemo()">Reset Demo</button></div>
+  <div class="rolebar">
+    <button id="roleCustomer" class="active" onclick="setRole('customer')">Customer</button>
+    <button id="roleShop" onclick="setRole('shop')">Shopkeeper</button>
+    <button id="roleAdmin" onclick="setRole('admin')">Admin</button>
+  </div>
+</header>
+
+<main class="wrap">
+<section id="customer" class="screen active">
+  <div class="hero"><div class="row"><div><h2>Book your service</h2><p class="muted">Select your service, date and available time slot. Shopkeeper personal details are not shown to customers.</p></div><button class="btn primary" onclick="openRegistration('customer')">Customer Registration</button></div></div>
+  <div class="card" style="margin-bottom:15px"><div class="row"><h3>Just Chill Categories</h3><span class="badge approved">7 Categories</span></div><p class="muted">Tap any category to open its complete services.</p><div id="customerCategories" class="grid2"></div></div><div class="nav"><button class="active" onclick="customerTab('book',this)">Book</button><button onclick="customerTab('history',this)">My Bookings</button><button onclick="customerTab('profile',this)">Profile</button></div>
+  <div id="customerBook">
+    <div class="grid2">
+      <div class="card">
+        <h3>Customer details</h3>
+        <label>Name</label><input id="cName" placeholder="Enter your name">
+        <label>Mobile</label><input id="cMobile" inputmode="numeric" placeholder="10 digit mobile">
+        <label>Category</label><select id="bookingCategory" onchange="renderBookingCategory()"></select><label>Choose shop</label><select id="shopSelect" onchange="renderServices()"></select>
+        <label>Service</label><select id="serviceSelect"></select>
+      </div>
+      <div class="card">
+        <h3>Schedule</h3>
+        <label>Date</label><input id="bookDate" type="date">
+        <label>Time slot</label><select id="slotSelect"></select>
+        <label>Notes</label><textarea id="bookNotes" rows="3" placeholder="Optional request"></textarea>
+        <button class="btn primary full" onclick="createBooking()">Confirm Booking</button>
+      </div>
+    </div>
+  </div>
+  <div id="customerHistory" style="display:none"></div>
+  <div id="customerProfile" style="display:none"></div>
+</section>
+
+<section id="shop" class="screen">
+  <div class="hero"><div class="row"><div><h2>Shopkeeper Dashboard</h2><p class="muted">Shop ID: <b>JC-SHOP-0001</b> · Customer details stay protected until approval subscription is active.</p></div><button class="btn primary" onclick="openRegistration('shopkeeper')">Shopkeeper Registration</button></div></div>
+  <div class="nav"><button class="active" onclick="shopTab('dashboard',this)">Orders</button><button onclick="shopTab('schedule',this)">Schedule</button><button onclick="shopTab('services',this)">Services</button><button onclick="shopTab('settings',this)">Shop Settings</button><button onclick="shopTab('reports',this)">Reports</button></div>
+  <div id="shopDashboard"></div><div id="shopSchedule" style="display:none"></div><div id="shopServices" style="display:none"></div><div id="shopSettings" style="display:none"></div><div id="shopReports" style="display:none"></div>
+</section>
+
+<section id="admin" class="screen">
+  <div id="adminLogin" class="card" style="max-width:480px;margin:30px auto">
+    <h2>Admin Login</h2>
+    <p class="muted">Demo admin access. Enter the demo credentials to open the full management frontend.</p>
+    <label>Admin ID</label><input id="adminId" placeholder="admin">
+    <label>Password</label><input id="adminPass" type="password" placeholder="••••••••">
+    <br><br><button class="btn primary full" onclick="adminLogin()">Login to Admin Panel</button>
+    
+  </div>
+  <div id="adminPanel" style="display:none">
+    <div class="hero"><div class="row"><div><h2>Admin Panel</h2><p class="muted">Full frontend visibility of registered shopkeepers, customers, bookings, subscriptions and support.</p></div><button class="btn dark" onclick="adminLogout()">Logout</button></div></div>
+    <div class="nav"><button class="active" onclick="adminTab('overview',this)">Overview</button><button onclick="adminTab('shops',this)">Shopkeepers</button><button onclick="adminTab('customers',this)">Customers</button><button onclick="adminTab('bookings',this)">Bookings</button><button onclick="adminTab('subscriptions',this)">Subscriptions</button><button onclick="adminTab('support',this)">Support</button><button onclick="adminTab('dataCentre',this)">Data Centre</button></div>
+    <div id="adminOverview"></div><div id="adminShops" style="display:none"></div><div id="adminCustomers" style="display:none"></div><div id="adminBookings" style="display:none"></div><div id="adminSubscriptions" style="display:none"></div><div id="adminSupport" style="display:none"></div><div id="adminDataCentre" style="display:none"></div>
+  </div>
+</section>
+</main>
+</div>
+
+<div id="modal" class="modal"><div class="modalbox" id="modalContent"></div></div>
+<div id="categoryModal" class="modal"><div class="modalbox" id="categoryModalContent"></div></div>
+<div id="registrationModal" class="modal"><div class="modalbox" id="registrationContent"></div></div>
+<div id="toast" class="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const KEY='justChillDemoV3';
+const defaultCategories=[
+ {name:'Beauty & Salon',services:["Men's Parlour","Women's Parlour"]},
+ {name:'Wheecals Service',services:['Bike Repair','Car Repair','Auto Repair','Tempo Repair','Truck Repair','Vehicle Washing','Vehicle Servicing']},
+ {name:'Electric & Electronic Appliance Repair',services:['Electrician','AC Repair','Cooler Repair','Fridge Repair','Inverter Repair','Washing Machine Repair']},
+ {name:'Plumber',services:['Water Work','Plumbing Work','Pipe Repair','Bathroom Plumbing']},
+ {name:'Groceries',services:['Household Daily Groceries','Daily Essentials','Home Delivery']},
+ {name:'Hardware Shop',services:['Construction Materials','Home Building Materials','Tools & Hardware']},
+ {name:'Steel & Iron Work Shop',services:['Steel Fabrication','Iron Fabrication','Gates','Grills','Railings','Welding']}
+];
+const defaultData={
+ customer:{name:'',mobile:'',category:'Beauty & Salon'},
+ shops:[
+  {id:'JC-SHOP-0001',name:'Chill Cuts & Care',category:'Beauty & Salon',rating:4.8,services:[{name:"Men's Parlour",price:199},{name:"Women's Parlour",price:299}],open:'09:00',close:'20:00',slots:['10:00 AM','11:00 AM','12:00 PM','02:00 PM','04:00 PM','06:00 PM']},
+  {id:'JC-SHOP-0002',name:'Urban Wellness',category:'Beauty & Salon',rating:4.7,services:[{name:"Men's Parlour",price:199},{name:"Women's Parlour",price:299}],open:'10:00',close:'21:00',slots:['10:00 AM','12:00 PM','03:00 PM','05:00 PM','07:00 PM']}
+ ],
+ bookings:[],
+ subscription:{active:false,plan:null,expires:null},
+ tickets:[],
+ notifications:[],
+  activityLogs:[]
+};
+let db=load();
+function normalizeDb(){
+  db.bookings=db.bookings||[];
+  db.shops=db.shops||[];
+  db.tickets=db.tickets||[];
+  db.notifications=db.notifications||[];
+  db.activityLogs=db.activityLogs||[];
+  db.customer=db.customer||{name:'',mobile:'',category:defaultCategories[0].name};
+  db.subscriptions=db.subscriptions||{};
+  if(db.subscription && !Object.keys(db.subscriptions).length){
+    const sid=db.shops[0]?.id||'JC-SHOP-0001';
+    db.subscriptions[sid]=db.subscription;
+  }
+  delete db.subscription;
+  db.shops.forEach(shop=>{
+    if(!Array.isArray(shop.services) || !shop.services.length){
+      const cat=defaultCategories.find(c=>c.name===shop.category);
+      if(cat) shop.services=cat.services.map((name,i)=>({name,price:99+i*50}));
+    }
+  });
+}
+normalizeDb();
+let currentShopId=sessionStorage.getItem('jcShopId')||'JC-SHOP-0001';
+// Just Chill V2: cloud sync adapter.
+// Paste your Supabase project URL + anon key below to enable multi-device sync.
+// The demo remains usable locally until cloud credentials are configured.
+const CLOUD = {
+  // Supabase browser adapter. Put ONLY the publishable/anon key here, never a service_role key.
+  enabled: true,
+  url: 'https://yolnoymbfsmvxsiqmkym.supabase.co',
+  anonKey: 'sb_publishable_Y4XX0YrDQBq6SOqnSjgKYQ_7aPRYvmz'
+};
+const supabaseClient = (window.supabase && CLOUD.url && CLOUD.anonKey)
+  ? window.supabase.createClient(CLOUD.url, CLOUD.anonKey)
+  : null;
+let cloudTimer = null;
+let cloudStatus = 'Local Demo';
+
+
+let realtimeChannel=null;
+let cloudDirty=false;
+let cloudPushTimer=null;
+let cloudSyncing=false;
+let lastCloudUpdatedAt=0;
+
+function startRealtime(){
+  if(!supabaseClient) return;
+  try{
+    realtimeChannel=supabaseClient.channel('just-chill-live')
+      .on('postgres_changes',{event:'*',schema:'public',table:'app_state'},payload=>{
+        if(!payload.new || !payload.new.data) return;
+        const remoteTime=Date.parse(payload.new.updated_at||'')||0;
+        if(cloudDirty && remoteTime <= lastCloudUpdatedAt) return;
+        if(cloudDirty) return; // local unsynced edits always win until pushed
+        db=payload.new.data;
+        lastCloudUpdatedAt=remoteTime;
+        saveLocal();
+        renderAll();
+        toast('Live data updated');
+      }).subscribe();
+  }catch(e){console.warn('Realtime unavailable',e)}
+}
+
+function cloudHeaders(){
+  return {'apikey':CLOUD.anonKey,'Authorization':'Bearer '+CLOUD.anonKey,'Content-Type':'application/json','Prefer':'return=representation'};
+}
+async function cloudFetch(path, options={}){
+  if(!CLOUD.enabled || !CLOUD.url || !CLOUD.anonKey) return null;
+  const r=await fetch(CLOUD.url.replace(/\/$/,'')+'/rest/v1/'+path,{
+    ...options, headers:{...cloudHeaders(),...(options.headers||{})}
+  });
+  if(!r.ok) throw new Error(await r.text());
+  return r.status===204?[]:await r.json();
+}
+
+async function pushCloud(force=false){
+  if(!CLOUD.enabled || cloudSyncing) return false;
+  if(!force && !cloudDirty) return true;
+  cloudSyncing=true;
+  try{
+    const now=new Date().toISOString();
+    const result=await cloudFetch('app_state?id=eq.just-chill',{
+      method:'PATCH',
+      body:JSON.stringify({data:db,updated_at:now}),
+      headers:{'Prefer':'return=representation'}
+    });
+    if(!result || !result.length){
+      await cloudFetch('app_state',{
+        method:'POST',
+        body:JSON.stringify({id:'just-chill',data:db,updated_at:now}),
+        headers:{'Prefer':'resolution=merge-duplicates,return=representation'}
+      });
+    }
+    cloudDirty=false;
+    lastCloudUpdatedAt=Date.parse(now);
+    cloudStatus='Cloud Connected';
+    return true;
+  }catch(e){
+    cloudStatus='Cloud Error';
+    console.warn('Just Chill cloud push:',e);
+    return false;
+  }finally{cloudSyncing=false;}
+}
+
+async function syncCloud(){
+  if(!CLOUD.enabled || cloudSyncing) return;
+  try{
+    // Never overwrite a local change that has not reached Supabase yet.
+    if(cloudDirty){ await pushCloud(true); return; }
+    const remote=await cloudFetch('app_state?select=*&id=eq.just-chill');
+    if(remote && remote[0] && remote[0].data){
+      const remoteTime=Date.parse(remote[0].updated_at||'')||0;
+      if(remoteTime>=lastCloudUpdatedAt){
+        db=remote[0].data;
+        lastCloudUpdatedAt=remoteTime;
+        saveLocal();
+        renderAll();
+      }
+    }else{
+      cloudDirty=true;
+      await pushCloud(true);
+    }
+    cloudStatus='Cloud Connected';
+  }catch(e){
+    cloudStatus='Cloud Error';
+    console.warn('Just Chill cloud sync:',e);
+    renderAdmin();
+  }
+}
+
+function saveLocal(){localStorage.setItem(KEY,JSON.stringify(db))}
+function save(){
+  saveLocal();
+  cloudDirty=true;
+  clearTimeout(cloudPushTimer);
+  cloudPushTimer=setTimeout(()=>pushCloud(true),250);
+}
+
+function getSubscription(shopId){
+  return db.subscriptions?.[shopId]||{active:false,plan:null,amount:null,expires:null};
+}
+function setSubscription(shopId,sub){
+  db.subscriptions=db.subscriptions||{};
+  db.subscriptions[shopId]=sub;
+}
+function addActivity(action, entityType, entityId, details=''){
+  db.activityLogs=db.activityLogs||[];
+  db.activityLogs.unshift({
+    id:'ACT-'+Date.now().toString().slice(-8),
+    action, entityType, entityId, details,
+    time:new Date().toISOString()
+  });
+  db.activityLogs=db.activityLogs.slice(0,500);
+}
+
+
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||structuredClone(defaultData)}catch(e){return structuredClone(defaultData)}}
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function toast(t){const x=document.getElementById('toast');x.textContent=t;x.classList.add('show');setTimeout(()=>x.classList.remove('show'),2200)}
+function resetDemo(){if(confirm('Reset all demo data?')){db=structuredClone(defaultData);save();renderAll();toast('Demo reset successfully')}}
+function setRole(role){
+ document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById(role).classList.add('active');
+ document.querySelectorAll('.rolebar button').forEach(x=>x.classList.remove('active'));document.getElementById('role'+role[0].toUpperCase()+role.slice(1)).classList.add('active');
+ renderAll();
+}
+function customerTab(t,b){['customerBook','customerHistory','customerProfile'].forEach(id=>document.getElementById(id).style.display='none');document.getElementById('customer'+t[0].toUpperCase()+t.slice(1)).style.display='block';document.querySelectorAll('#customer .nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderCustomer()}
+function shopTab(t,b){['shopDashboard','shopSchedule','shopServices','shopSettings','shopReports'].forEach(id=>document.getElementById(id).style.display='none');document.getElementById('shop'+t[0].toUpperCase()+t.slice(1)).style.display='block';document.querySelectorAll('#shop .nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderShop()}
+function adminTab(t,b){['adminOverview','adminShops','adminCustomers','adminBookings','adminSubscriptions','adminSupport','adminDataCentre'].forEach(id=>document.getElementById(id).style.display='none');document.getElementById('admin'+t[0].toUpperCase()+t.slice(1)).style.display='block';document.querySelectorAll('#admin .nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderAdmin()}
+
+function renderAll(){renderCustomer();renderShop();renderAdmin()}
+
+
+function openRegistration(role){
+  const isShop=role==='shopkeeper';
+  document.getElementById('registrationContent').innerHTML=`
+    <div class="row"><div><h2>${isShop?'Shopkeeper Registration':'Customer Registration'}</h2>
+    <p class="muted">${isShop?'Register your shop and select its business category.':'Create your customer profile and choose your preferred service category.'}</p></div>
+    <button class="btn" onclick="closeRegistration()">✕</button></div>
+    <label>Name</label><input id="regName" placeholder="${isShop?'Shopkeeper name':'Customer name'}">
+    <label>Mobile</label><input id="regMobile" inputmode="numeric" placeholder="10 digit mobile">
+    ${isShop?`
+      <label>Shop Name</label><input id="regShopName" placeholder="Your shop name">
+      <label>Shop Category</label><select id="regCategory">${defaultCategories.map(c=>`<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('')}</select>
+      <label>Shop ID</label><input value="JC-SHOP-${String((db.shops?.length||0)+1).padStart(4,'0')}" readonly>
+    `:`
+      <label>Service Category</label><select id="regCategory">${defaultCategories.map(c=>`<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('')}</select>
+    `}
+    <br><br><button class="btn primary full" onclick="submitRegistration('${role}')">Create ${isShop?'Shopkeeper':'Customer'} Account</button>`;
+  document.getElementById('registrationModal').classList.add('open');
+}
+function closeRegistration(){document.getElementById('registrationModal').classList.remove('open')}
+function submitRegistration(role){
+  const name=document.getElementById('regName').value.trim();
+  const mobile=document.getElementById('regMobile').value.trim();
+  const category=document.getElementById('regCategory').value;
+  if(!name||!/^[0-9]{10}$/.test(mobile)){toast('Enter name and valid 10 digit mobile');return}
+  if(role==='customer'){
+    db.customer={name,mobile,category};
+    addActivity('New customer registration','customer',mobile,`${name} · ${category}`);
+    save(); closeRegistration(); renderAll(); toast('Customer registered successfully');
+  }else{
+    const shopName=document.getElementById('regShopName').value.trim();
+    if(!shopName){toast('Enter shop name');return}
+    const n=(db.shops?.length||0)+1;
+    const shop={
+      id:'JC-SHOP-'+String(n).padStart(4,'0'), name:shopName, ownerName:name, mobile,
+      category, rating:5, services:[], open:'09:00', close:'20:00',
+      slots:['10:00 AM','11:00 AM','12:00 PM','02:00 PM','04:00 PM','06:00 PM']
+    };
+    db.shops.unshift(shop);
+    currentShopId=shop.id;
+    sessionStorage.setItem('jcShopId',currentShopId);
+    addActivity('New shopkeeper registration','shop',shop.id,`${shopName} · ${category}`);
+    save(); closeRegistration(); renderAll(); toast(`Shop registered: ${shop.id}`);
+  }
+}
+function renderBookingCategory(){
+  const c=document.getElementById('bookingCategory'), ss=document.getElementById('shopSelect');
+  if(!c||!ss)return;
+  const category=defaultCategories.find(x=>x.name===c.value)||defaultCategories[0];
+  let matching=db.shops.filter(s=>s.category===category.name && Array.isArray(s.services) && s.services.length);
+  if(!matching.length){
+    const id='JC-DEMO-'+String(defaultCategories.indexOf(category)+1).padStart(3,'0');
+    let demo=db.shops.find(s=>s.id===id);
+    if(!demo){demo={id,name:'Just Chill '+category.name+' Service',category:category.name,rating:5,services:category.services.map((name,i)=>({name,price:99+i*50})),open:'09:00',close:'20:00',slots:['10:00 AM','11:00 AM','12:00 PM','02:00 PM','04:00 PM','06:00 PM']};db.shops.push(demo);save();}
+    matching=[demo];
+  }
+  ss.innerHTML=matching.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('');
+  if(matching.length) ss.value=matching[0].id;
+  renderServices();
+}
+
+function renderCustomerCategories(){
+  const el=document.getElementById('customerCategories');
+  if(!el) return;
+  el.innerHTML=defaultCategories.map((c,i)=>`
+    <div class="categoryCard" onclick="openCategory(${i})">
+      <div class="row"><div class="title">${esc(c.name)}</div><span class="badge approved">${c.services.length} Services</span></div>
+      <div class="muted" style="margin-top:7px">${c.services.slice(0,3).map(esc).join(' · ')}${c.services.length>3?' · More...':''}</div>
+      <button class="btn primary" style="margin-top:12px" onclick="event.stopPropagation();openCategory(${i})">Open Category</button>
+    </div>`).join('');
+}
+function openCategory(i){
+  const c=defaultCategories[i];
+  document.getElementById('categoryModalContent').innerHTML=`
+    <div class="row"><div><h2>${esc(c.name)}</h2><p class="muted">Select a service to continue booking.</p></div>
+    <button class="btn" onclick="closeCategoryModal()">✕</button></div>
+    ${c.services.map(s=>`<div class="serviceRow"><b>${esc(s)}</b><button class="btn primary" onclick="selectCategoryService(${i},'${esc(s).replace(/'/g,"&#039;")}')">Book / Select Service</button></div>`).join('')}`;
+  document.getElementById('categoryModal').classList.add('open');
+}
+function selectCategoryService(i,serviceName){
+  const c=defaultCategories[i], bc=document.getElementById('bookingCategory');
+  if(bc)bc.value=c.name;
+  closeCategoryModal(); renderBookingCategory();
+  const ss=document.getElementById('serviceSelect');
+  const option=[...ss.options].find(o=>o.value===serviceName); if(option)ss.value=serviceName;
+  toast(`${serviceName} selected`);
+}
+
+function closeCategoryModal(){document.getElementById('categoryModal').classList.remove('open')}
+
+function renderCustomer(){
+  renderCustomerCategories();
+  const bc=document.getElementById('bookingCategory'); if(bc){
+    const current=bc.value||db.customer.category||defaultCategories[0].name;
+    bc.innerHTML=defaultCategories.map(c=>`<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('');
+    bc.value=defaultCategories.some(c=>c.name===current)?current:defaultCategories[0].name;
+    renderBookingCategory();
+  }
+ const ss=document.getElementById('shopSelect'); if(!ss)return;
+ // Keep the shop list scoped to the selected customer category. Do not overwrite
+ // the category-filtered list here, otherwise the first Beauty & Salon shop wins.
+ document.getElementById('cName').value=db.customer.name;document.getElementById('cMobile').value=db.customer.mobile;
+ const d=document.getElementById('bookDate'); if(!d.value){let n=new Date();n.setDate(n.getDate()+1);d.value=n.toISOString().slice(0,10)}
+ const mine=db.bookings.filter(b=>b.mobile===db.customer.mobile && db.customer.mobile);
+ document.getElementById('customerHistory').innerHTML=`<div class="card"><h3>My Bookings</h3>${mine.length?mine.map(b=>bookingCard(b,'customer')).join(''):'<p class="muted">No bookings yet. Make your first booking from the Book tab.</p>'}</div>`;
+ document.getElementById('customerProfile').innerHTML=`<div class="card"><h3>My Profile</h3><label>Name</label><input id="profileName" value="${esc(db.customer.name)}"><label>Mobile</label><input id="profileMobile" value="${esc(db.customer.mobile)}"><label>Service Category</label><select id="profileCategory">${defaultCategories.map(c=>`<option value="${esc(c.name)}" ${c.name===db.customer.category?'selected':''}>${esc(c.name)}</option>`).join('')}</select><br><br><button class="btn primary" onclick="saveProfile()">Save Profile</button></div>`;
+}
+function renderServices(){
+ const s=db.shops.find(x=>x.id===document.getElementById('shopSelect').value)||db.shops[0];if(!s)return;
+ document.getElementById('serviceSelect').innerHTML=s.services.map(x=>`<option value="${esc(x.name)}">${esc(x.name)} — ₹${x.price}</option>`).join('');
+ document.getElementById('slotSelect').innerHTML=s.slots.map(x=>`<option>${esc(x)}</option>`).join('');
+}
+function saveProfile(){db.customer.name=document.getElementById('profileName').value.trim();db.customer.mobile=document.getElementById('profileMobile').value.trim();db.customer.category=document.getElementById('profileCategory').value;save();renderAll();toast('Profile saved')}
+function createBooking(){
+ const name=document.getElementById('cName').value.trim(),mobile=document.getElementById('cMobile').value.trim();
+ if(!name||!mobile){toast('Enter name and mobile first');return}
+ if(!/^[0-9]{10}$/.test(mobile)){toast('Enter a valid 10 digit mobile');return}
+ const shop=db.shops.find(s=>s.id===document.getElementById('shopSelect').value);
+ if(!shop){toast('Please select a shop');return}
+ const service=shop.services.find(s=>s.name===document.getElementById('serviceSelect').value);
+ if(!service){toast('Please select a service');return}
+ const b={id:'JC-'+Date.now().toString().slice(-7),shopId:shop.id,shop:shop.name,name,mobile,date:document.getElementById('bookDate').value,time:document.getElementById('slotSelect').value,service:service.name,price:service.price,notes:document.getElementById('bookNotes').value,status:'Pending',created:new Date().toISOString()};
+ db.customer={name,mobile,category:document.getElementById('bookingCategory').value};db.bookings.unshift(b);db.notifications.unshift({text:`Booking ${b.id} submitted to ${shop.name}`,time:new Date().toLocaleString()});addActivity('New booking','booking',b.id,`${b.service} at ${shop.name}`);save();renderAll();toast('Booking submitted successfully');
+}
+function bookingCard(b,mode){
+ const masked=b.mobile?b.mobile.slice(0,2)+'******'+b.mobile.slice(-2):'';
+ let customer=mode==='shop'?(getSubscription(b.shopId).active?`<div><b>Customer:</b> ${esc(b.name)}</div><div><b>Mobile:</b> ${esc(b.mobile)}</div>`:`<div><b>Customer:</b> <span class="hiddeninfo">${esc(b.name)}</span></div><div><b>Mobile:</b> <span class="hiddeninfo">${esc(masked)}</span></div><small class="muted">Subscribe to unlock customer details</small>`):`<div><b>Customer:</b> ${esc(b.name)}</div><div><b>Mobile:</b> ${esc(b.mobile)}</div>`;
+ let acts='';
+ if(mode==='shop'&&b.status==='Pending')acts=`<div class="actions"><button class="btn good" onclick="approveClick('${b.id}')">Approve</button><button class="btn bad" onclick="rejectBooking('${b.id}')">Reject</button></div>`;
+ if(mode==='customer'&&b.status==='Approved')acts=`<div class="actions"><button class="btn primary" onclick="completeBooking('${b.id}')">Mark Completed</button><button class="btn bad" onclick="cancelBooking('${b.id}')">Cancel</button></div>`;
+ return `<div class="booking"><div class="row"><div class="title">${esc(b.service)} · ₹${b.price}</div><span class="badge ${b.status.toLowerCase()}">${b.status}</span></div><div class="muted" style="margin:7px 0">${esc(b.shop)} · ${esc(b.date)} · ${esc(b.time)}</div>${customer}${b.notes?`<div><b>Notes:</b> ${esc(b.notes)}</div>`:''}<div style="margin-top:10px">${acts}</div></div>`;
+}
+function approveClick(id){
+ if(!getSubscription(currentShopId).active){openSubscription(id);return}
+ const b=db.bookings.find(x=>x.id===id);if(!b)return;b.status='Approved';db.notifications.unshift({text:`Booking ${b.id} approved`,time:new Date().toLocaleString()});addActivity('Booking approved','booking',b.id,b.shop);save();renderAll();toast('Booking approved')}
+function rejectBooking(id){const b=db.bookings.find(x=>x.id===id);if(!b)return;b.status='Rejected';addActivity('Booking rejected','booking',b.id,b.shop);save();renderAll();toast('Booking rejected')}
+function completeBooking(id){const b=db.bookings.find(x=>x.id===id);if(!b)return;b.status='Completed';addActivity('Booking completed','booking',b.id,b.shop);save();renderAll();toast('Booking marked completed')}
+function cancelBooking(id){const b=db.bookings.find(x=>x.id===id);if(!b)return;b.status='Cancelled';addActivity('Booking cancelled','booking',b.id,b.shop);save();renderAll();toast('Booking cancelled')}
+
+function openSubscription(bookingId){
+ document.getElementById('modalContent').innerHTML=`<div class="row"><h2>Subscription Required</h2><button class="btn" onclick="closeModal()">✕</button></div><p class="muted">To approve a customer booking and unlock customer details, choose a shopkeeper subscription.</p>
+ <div class="grid2">
+ <div class="plan" id="p299"><div class="price">₹299</div><b>Basic</b><p class="muted">Booking approval + customer details</p><button class="btn primary full" onclick="activatePlan(299,'Basic','${bookingId}')">Choose ₹299</button></div>
+ <div class="plan" id="p399"><div class="price">₹399</div><b>Standard</b><p class="muted">Approval + details + reports</p><button class="btn primary full" onclick="activatePlan(399,'Standard','${bookingId}')">Choose ₹399</button></div>
+ <div class="plan" id="p499"><div class="price">₹499</div><b>Premium</b><p class="muted">All demo shopkeeper features</p><button class="btn primary full" onclick="activatePlan(499,'Premium','${bookingId}')">Choose ₹499</button></div></div>
+ <p class="muted">Demo mode: no real payment is charged.</p>`;document.getElementById('modal').classList.add('open');
+}
+function activatePlan(amount,name,id){
+  setSubscription(currentShopId,{active:true,plan:name,amount,expires:'30 days demo'});
+  addActivity('Subscription activated','subscription',name,`Shop ${currentShopId} · ₹${amount} ${name}`);
+  save();closeModal();toast(`₹${amount} ${name} subscription activated (demo)`);
+  if(id) setTimeout(()=>{approveClick(id)},350);
+}
+function closeModal(){document.getElementById('modal').classList.remove('open')}
+
+function setCurrentShop(id){
+  if(!db.shops.some(s=>s.id===id)) return;
+  currentShopId=id;
+  sessionStorage.setItem('jcShopId',id);
+  renderShop();
+  toast('Shopkeeper view switched');
+}
+function renderShop(){
+ const shopId=currentShopId&&db.shops.some(s=>s.id===currentShopId)?currentShopId:(db.shops[0]?.id||'');
+ currentShopId=shopId;
+ const selectedShop=db.shops.find(s=>s.id===shopId)||db.shops[0];
+ if(!selectedShop)return;
+ const pending=db.bookings.filter(b=>b.shopId===shopId&&b.status==='Pending'),all=db.bookings.filter(b=>b.shopId===shopId); const shopSub=getSubscription(shopId);
+ document.getElementById('shopDashboard').innerHTML=`<div class="card" style="margin-bottom:14px"><div class="row"><div><h3>Shopkeeper Account</h3><p class="muted">Select the shopkeeper account for this demo. Each shop only sees its own customer orders.</p></div><select id="currentShopSelect" onchange="setCurrentShop(this.value)" style="max-width:360px">${db.shops.map(s=>`<option value="${esc(s.id)}" ${s.id===shopId?'selected':''}>${esc(s.name)} · ${esc(s.category)}</option>`).join('')}</select></div></div><div class="grid"><div class="card"><div class="muted">Pending Orders</div><div class="stat">${pending.length}</div></div><div class="card"><div class="muted">Approved</div><div class="stat">${all.filter(b=>b.status==='Approved').length}</div></div><div class="card"><div class="muted">Subscription</div><div class="stat">${shopSub.active?'ON':'OFF'}</div></div></div>
+ <div class="card" style="margin-top:14px"><div class="row"><h3>Customer Orders</h3><span class="badge ${db.subscription.active?'approved':'pending'}">${shopSub.active?'Subscription Active':'Subscription Required'}</span></div>${all.length?all.map(b=>bookingCard(b,'shop')).join(''):'<p class="muted">No customer orders yet. Create a booking from Customer mode.</p>'}</div>`;
+ const s=selectedShop;
+ document.getElementById('shopSchedule').innerHTML=`<div class="card"><h3>Daily Schedule</h3><p class="muted">Shop timing: ${s.open}–${s.close}</p>${s.slots.map(slot=>`<div class="booking"><b>${slot}</b> <span class="muted">· ${all.filter(b=>b.time===slot&&b.status!=='Rejected'&&b.status!=='Cancelled').length} booking(s)</span></div>`).join('')}</div>`;
+ document.getElementById('shopServices').innerHTML=`<div class="card"><h3>Services & Prices</h3>${s.services.map((x,i)=>`<div class="booking row"><span><b>${esc(x.name)}</b><br><small class="muted">Service ${i+1}</small></span><b>₹${x.price}</b></div>`).join('')}<br><button class="btn primary" onclick="addService()">+ Add Service</button></div><div class="card" style="margin-top:14px"><div class="row"><h3>Just Chill 7 Categories</h3><span class="badge approved">Add / Manage</span></div><div class="grid2">${defaultCategories.map((c,i)=>`<div class="categoryCard" onclick="openCategory(${i})"><b>${esc(c.name)}</b><div class="muted" style="margin-top:5px">${c.services.length} services · Tap to open</div><button class="btn" style="margin-top:9px" onclick="event.stopPropagation();openCategory(${i})">Open Services</button></div>`).join('')}</div></div>`;
+ document.getElementById('shopSettings').innerHTML=`<div class="card"><h3>Shop Settings</h3><label>Shop name</label><input id="shopNameEdit" value="${esc(s.name)}"><label>Shop Category</label><select id="shopCategoryEdit">${defaultCategories.map((c,i)=>`<option value="${esc(c.name)}" ${c.name===s.category?'selected':''}>${esc(c.name)}</option>`).join('')}</select><div class="formgrid"><div><label>Opening time</label><input id="openEdit" value="${s.open}" type="time"></div><div><label>Closing time</label><input id="closeEdit" value="${s.close}" type="time"></div></div><br><button class="btn primary" onclick="saveShopSettings()">Save Settings</button></div><div class="card" style="margin-top:14px"><h3>Subscription</h3><p>${getSubscription(currentShopId).active?`Active plan: <b>${esc(getSubscription(currentShopId).plan)}</b> · ₹${getSubscription(currentShopId).amount}`:'No active subscription'}</p><button class="btn primary" onclick="openSubscription('')">View Plans</button></div>`;
+ const revenue=all.filter(b=>b.status==='Completed').reduce((a,b)=>a+b.price,0);
+ document.getElementById('shopReports').innerHTML=`<div class="grid"><div class="card"><div class="muted">Total Orders</div><div class="stat">${all.length}</div></div><div class="card"><div class="muted">Completed Revenue</div><div class="stat">₹${revenue}</div></div><div class="card"><div class="muted">Rating</div><div class="stat">4.8 ★</div></div></div>`;
+}
+function saveShopSettings(){const s=db.shops.find(x=>x.id===currentShopId)||db.shops[0];s.name=document.getElementById('shopNameEdit').value.trim()||s.name;s.category=document.getElementById('shopCategoryEdit').value;s.open=document.getElementById('openEdit').value;s.close=document.getElementById('closeEdit').value;save();renderAll();toast('Shop settings saved')}
+function addService(){const shop=db.shops.find(x=>x.id===currentShopId)||db.shops[0]; const n=prompt('Service name?');if(!n)return;const p=Number(prompt('Price?','299'));if(!p)return;shop.services.push({name:n,price:p});save();renderAll();toast('Service added')}
+
+
+function adminLogin(){
+ const id=document.getElementById('adminId').value.trim(), pass=document.getElementById('adminPass').value;
+ if(id==='Jay108'&&pass==='Jha108@'){
+   sessionStorage.setItem('jcAdmin','1');
+   document.getElementById('adminLogin').style.display='none';
+   document.getElementById('adminPanel').style.display='block';
+   renderAdmin(); toast('Admin login successful');
+ }else toast('Invalid admin ID or password');
+}
+function adminLogout(){
+ sessionStorage.removeItem('jcAdmin');
+ document.getElementById('adminLogin').style.display='block';
+ document.getElementById('adminPanel').style.display='none';
+}
+
+function renderDataCentre(){
+  db.activityLogs=db.activityLogs||[];
+  const tables=[
+    ['Customers', 'customers', Object.values(db.bookings.reduce((m,b)=>(m[b.mobile]||(m[b.mobile]={name:b.name,mobile:b.mobile,bookings:0}),m[b.mobile].bookings++,m),{}))],
+    ['Shops','shops',db.shops||[]],
+    ['Bookings','bookings',db.bookings||[]],
+    ['Subscriptions','subscriptions',Object.entries(db.subscriptions||{}).map(([shopId,sub])=>({...sub,shopId}))],
+    ['Support Tickets','support_tickets',db.tickets||[]],
+    ['Activity Logs','activity_logs',db.activityLogs]
+  ];
+  return `<div class="card"><div class="row"><div><h2>Cloud Data Centre</h2><p class="muted">Central activity/data view for multi-device synchronization.</p></div><span class="badge ${cloudStatus==='Cloud Connected'?'approved':'pending'}">${cloudStatus}</span></div>
+    <div class="grid2">${tables.map(t=>`<div class="card"><div class="muted">${t[0]}</div><div class="stat">${t[2].length}</div><small class="muted">${t[1]}</small></div>`).join('')}</div>
+    <div class="actions" style="margin-top:12px"><button class="btn primary" onclick="syncCloud().then(()=>{renderAdmin();toast('Cloud data refreshed')})">Refresh Cloud Data</button><button class="btn" onclick="downloadData()">Export JSON</button><button class="btn" onclick="downloadSupabaseSQL()">Supabase SQL</button></div>
+  </div>
+  <div class="card" style="margin-top:14px"><h3>Supabase Connection</h3><p class="muted">Project URL configured. If status shows <b>Cloud Error</b>, run the generated <b>Supabase SQL</b> once in Supabase → SQL Editor to create the cloud table.</p><p class="muted">This demo uses the browser-safe publishable key. Do not place a secret/service_role key in this HTML.</p></div>
+  <div class="card" style="margin-top:14px"><h3>Recent Activity</h3>${db.activityLogs.length?db.activityLogs.slice(0,50).map(x=>`<div class="booking"><div class="row"><b>${esc(x.action)}</b><span class="muted">${new Date(x.time).toLocaleString()}</span></div><div class="muted">${esc(x.entityType)} · ${esc(x.entityId)} ${x.details?'· '+esc(x.details):''}</div></div>`).join(''):'<p class="muted">No activity yet.</p>'}</div>`;
+}
+
+function downloadSupabaseSQL(){
+ const sql=`-- JUST CHILL SUPABASE DEMO SETUP
+-- Run this once in Supabase Dashboard -> SQL Editor.
+create table if not exists public.app_state (
+  id text primary key,
+  data jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.app_state enable row level security;
+
+drop policy if exists "Just Chill app state read" on public.app_state;
+drop policy if exists "Just Chill app state insert" on public.app_state;
+drop policy if exists "Just Chill app state update" on public.app_state;
+
+-- DEMO ONLY: public access is used because this prototype does not yet use Supabase Auth.
+-- Before production, replace these policies with authenticated/RBAC policies.
+create policy "Just Chill app state read" on public.app_state for select using (true);
+create policy "Just Chill app state insert" on public.app_state for insert with check (true);
+create policy "Just Chill app state update" on public.app_state for update using (true) with check (true);
+
+alter publication supabase_realtime add table public.app_state;
+`;
+ const blob=new Blob([sql],{type:'text/plain'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='just-chill-supabase-setup.sql'; a.click(); URL.revokeObjectURL(a.href);
+}
+
+function downloadData(){
+  const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='just-chill-data-centre.json';a.click();URL.revokeObjectURL(a.href);
+}
+
+function renderAdmin(){
+ if(sessionStorage.getItem('jcAdmin')!=='1') return;
+ const a=db.bookings,shops=db.shops;
+ const uniqueCustomers={};
+ a.forEach(b=>{uniqueCustomers[b.mobile]={name:b.name,mobile:b.mobile,bookings:(uniqueCustomers[b.mobile]?.bookings||0)+1}});
+ const customers=Object.values(uniqueCustomers);
+
+ document.getElementById('adminOverview').innerHTML=`<div class="grid">
+ <div class="card"><div class="muted">Registered Shopkeepers</div><div class="stat">${shops.length}</div></div>
+ <div class="card"><div class="muted">Customers</div><div class="stat">${customers.length}</div></div>
+ <div class="card"><div class="muted">Total Bookings</div><div class="stat">${a.length}</div></div>
+ <div class="card"><div class="muted">Active Subscriptions</div><div class="stat">${Object.values(db.subscriptions||{}).filter(x=>x&&x.active).length}</div></div>
+ </div>
+ <div class="card" style="margin-top:14px"><h3>Just Chill Service Categories</h3><div class="grid2">${defaultCategories.map(c=>`<div class="booking"><b>${esc(c.name)}</b><div class="muted" style="margin-top:5px">${c.services.map(esc).join(', ')}</div></div>`).join('')}</div></div><div class="card" style="margin-top:14px"><h3>Admin Quick View</h3>
+ <div class="actions"><button class="btn primary" onclick="adminTab('shops',document.querySelectorAll('#admin .nav button')[1])">View Shopkeepers</button>
+ <button class="btn primary" onclick="adminTab('customers',document.querySelectorAll('#admin .nav button')[2])">View Customers</button>
+ <button class="btn primary" onclick="adminTab('bookings',document.querySelectorAll('#admin .nav button')[3])">View All Bookings</button></div></div>`;
+
+ document.getElementById('adminShops').innerHTML=`<div class="card"><div class="row"><h3>All Shopkeeper Full Details</h3><span class="badge approved">Admin Only</span></div>
+ <div class="grid2">${shops.map(s=>`<div class="card" style="border:1px solid var(--line);box-shadow:none">
+ <h3>${esc(s.name)}</h3><p><b>Shop ID:</b> ${esc(s.id)}</p><p><b>Shopkeeper:</b> ${esc(s.ownerName||'Demo Shopkeeper')}</p><p><b>Mobile:</b> ${esc(s.mobile||'Not provided')}</p><p><b>Category:</b> ${esc(s.category)}</p><p><b>Rating:</b> ${s.rating} ★</p>
+ <p><b>Opening:</b> ${esc(s.open)} · <b>Closing:</b> ${esc(s.close)}</p>
+ <p><b>Services:</b> ${s.services.length}</p><p><b>Service List:</b> ${s.services.map(x=>esc(x.name)+' (₹'+x.price+')').join(', ')}</p>
+ <p><b>Subscription:</b> ${getSubscription(s.id).active?esc(getSubscription(s.id).plan)+' · ₹'+getSubscription(s.id).amount:'Not Active'}</p><p><b>Total Orders:</b> ${a.filter(b=>b.shopId===s.id).length}</p>
+ <p><b>Approved:</b> ${a.filter(b=>b.shopId===s.id&&b.status==='Approved').length} · <b>Completed:</b> ${a.filter(b=>b.shopId===s.id&&b.status==='Completed').length}</p>
+ <button class="btn primary" onclick="showShopDetails('${s.id}')">Open Full Details</button></div>`).join('')}</div></div>`;
+
+ document.getElementById('adminCustomers').innerHTML=`<div class="card"><div class="row"><h3>All Customer Full Details</h3><span class="badge approved">Admin Only</span></div>
+ ${customers.length?`<div style="overflow:auto"><table><tr><th>Name</th><th>Mobile</th><th>Total Bookings</th><th>Latest Status</th><th>Latest Shop</th></tr>${customers.map(c=>{let bs=a.filter(b=>b.mobile===c.mobile);let b=bs[0];return `<tr><td><b>${esc(c.name)}</b></td><td>${esc(c.mobile)}</td><td>${c.bookings}</td><td><span class="badge ${b.status.toLowerCase()}">${esc(b.status)}</span></td><td>${esc(b.shop)}</td></tr>`}).join('')}</table></div>`:'<p class="muted">No customer records yet. Create a booking from Customer mode.</p>'}</div>`;
+
+ document.getElementById('adminBookings').innerHTML=`<div class="card"><h3>All Customer Bookings — Full Details</h3>${a.length?a.map(b=>`<div class="booking">
+ <div class="row"><div><b>${esc(b.id)}</b> · ${esc(b.service)} · ₹${b.price}</div><span class="badge ${b.status.toLowerCase()}">${esc(b.status)}</span></div>
+ <p><b>Customer:</b> ${esc(b.name)} · <b>Mobile:</b> ${esc(b.mobile)}</p><p><b>Shop:</b> ${esc(b.shop)} (${esc(b.shopId)})</p>
+ <p><b>Date:</b> ${esc(b.date)} · <b>Time:</b> ${esc(b.time)}</p>${b.notes?`<p><b>Notes:</b> ${esc(b.notes)}</p>`:''}
+ </div>`).join(''):'<p class="muted">No bookings.</p>'}</div>`;
+
+ document.getElementById('adminSubscriptions').innerHTML=`<div class="card"><h3>Subscription Management</h3><div class="grid">${[['Basic',299],['Standard',399],['Premium',499]].map(x=>`<div class="plan"><div class="price">₹${x[1]}</div><b>${x[0]}</b><p class="muted">Shopkeeper subscription</p></div>`).join('')}</div><div class="booking"><b>Current demo subscription:</b> ${Object.entries(db.subscriptions||{}).filter(([_,x])=>x&&x.active).length+' active shop subscription(s)'}</div></div>`;
+
+ document.getElementById('adminSupport').innerHTML=`<div class="card"><h3>Support / Complaints</h3><label>Issue</label><textarea id="ticketText" rows="4" placeholder="Enter customer or shopkeeper issue"></textarea><br><br><button class="btn primary" onclick="createTicket()">Submit Ticket</button>${db.tickets.map(t=>`<div class="booking"><b>${esc(t.id)}</b> · ${esc(t.status)}<br>${esc(t.text)}</div>`).join('')}</div>`;
+}
+function showShopDetails(id){
+ const s=db.shops.find(x=>x.id===id); if(!s)return;
+ const bs=db.bookings.filter(b=>b.shopId===id);
+ document.getElementById('modalContent').innerHTML=`<div class="row"><h2>Shopkeeper Full Details</h2><button class="btn" onclick="closeModal()">✕</button></div>
+ <div class="booking"><p><b>Shop Name:</b> ${esc(s.name)}</p><p><b>Shopkeeper ID:</b> ${esc(s.id)}</p><p><b>Category:</b> ${esc(s.category)}</p><p><b>Rating:</b> ${s.rating} ★</p><p><b>Business Hours:</b> ${esc(s.open)} – ${esc(s.close)}</p><p><b>Services:</b> ${s.services.map(x=>esc(x.name)+' — ₹'+x.price).join(', ')}</p><p><b>Available Just Chill Categories:</b> ${defaultCategories.map(c=>esc(c.name)).join(', ')}</p><p><b>Total Orders:</b> ${bs.length}</p></div>
+ <h3>Shop Booking Records</h3>${bs.length?bs.map(b=>`<div class="booking"><b>${esc(b.id)}</b> · ${esc(b.name)} · ${esc(b.mobile)}<br>${esc(b.service)} · ${esc(b.date)} · ${esc(b.time)} · ${esc(b.status)}</div>`).join(''):'<p class="muted">No booking records.</p>'}`;
+ document.getElementById('modal').classList.add('open');
+}
+function createTicket(){const t=document.getElementById('ticketText').value.trim();if(!t){toast('Write an issue first');return}const ticket={id:'T-'+Date.now().toString().slice(-6),text:t,status:'Open'};db.tickets.unshift(ticket);addActivity('Support ticket created','ticket',ticket.id,t);save();renderAll();toast('Support ticket created')}
+
+renderAll();
+if(CLOUD.enabled){ syncCloud(); startRealtime(); cloudTimer=setInterval(syncCloud,10000); }
+</script>
+</body>
+</html>
